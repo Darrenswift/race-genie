@@ -12,6 +12,42 @@ http.createServer((req, res) => {
     console.log(`Health check server listening on port ${PORT}`);
 });
 
+/**
+ * Splits a text into chunks of at most maxLength characters, split cleanly at newlines.
+ */
+function splitMessage(text, maxLength = 2000) {
+    if (text.length <= maxLength) return [text];
+    
+    const chunks = [];
+    let currentChunk = '';
+    
+    const lines = text.split('\n');
+    for (const line of lines) {
+        if (line.length > maxLength) {
+            let remainingLine = line;
+            while (remainingLine.length > 0) {
+                const sliceLength = maxLength - currentChunk.length;
+                currentChunk += remainingLine.slice(0, sliceLength);
+                chunks.push(currentChunk);
+                currentChunk = '';
+                remainingLine = remainingLine.slice(sliceLength);
+            }
+        } else if ((currentChunk + line + '\n').length > maxLength) {
+            if (currentChunk.trim()) {
+                chunks.push(currentChunk.trim());
+            }
+            currentChunk = line + '\n';
+        } else {
+            currentChunk += line + '\n';
+        }
+    }
+    if (currentChunk.trim()) {
+        chunks.push(currentChunk.trim());
+    }
+    
+    return chunks;
+}
+
 // Initialize Discord Client.
 // When using ONLY slash commands, we only need the Guilds intent.
 const client = new Client({
@@ -63,10 +99,21 @@ client.on('interactionCreate', async (interaction) => {
             // Update session history
             updateSessionHistory(user.id, userPrompt, advice);
 
-            // Respond privately to the user
+            const responseText = `🏁 **YOUR PRIVATE SETUP SHEET:**\n\n${advice}`;
+            const chunks = splitMessage(responseText);
+
+            // Edit the initial deferred reply with the first chunk
             await interaction.editReply({
-                content: `🏁 **YOUR PRIVATE SETUP SHEET:**\n\n${advice}`
+                content: chunks[0]
             });
+
+            // Send any remaining chunks as ephemeral follow-ups
+            for (let i = 1; i < chunks.length; i++) {
+                await interaction.followUp({
+                    content: chunks[i],
+                    ephemeral: true
+                });
+            }
 
         } catch (error) {
             console.error("Interaction Setup Error:", error);
