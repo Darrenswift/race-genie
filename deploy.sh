@@ -188,11 +188,15 @@ gcloud compute instances create "$VM_NAME" \
     --network="$NETWORK_NAME" \
     --subnet="$SUBNET_NAME" \
     --no-address \
+    --shielded-secure-boot \
     --boot-disk-size="10GB"
 
 echo "🎉 Deployment successful!"
 echo "--------------------------------------------------------"
 echo "VM Name: $VM_NAME"
 echo "GCP Zone: $ZONE"
-echo "Check startup logs inside the VM using: gcloud compute instances get-serial-port-output $VM_NAME --zone=$ZONE"
+echo "Note: Serial port access is disabled by your org policy. To monitor boot progress, SSH into the VM:"
+echo "  gcloud compute ssh $VM_NAME --zone=$ZONE"
+echo "and tail the startup script logs:"
+echo "  sudo journalctl -u google-startup-scripts.service -f"
 echo "--------------------------------------------------------"
