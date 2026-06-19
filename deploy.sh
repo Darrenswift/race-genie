@@ -127,8 +127,8 @@ gcloud compute instances create "$VM_NAME" \
     --scopes="https://www.googleapis.com/auth/cloud-platform" \
     --metadata="deploy-bucket=${BUCKET_NAME}" \
     --metadata-from-file="startup-script=startup.sh" \
-    --image-family="ubuntu-2404-lts" \
-    --image-project="ubuntu-os-cloud" \
+    --image-family="debian-12" \
+    --image-project="debian-cloud" \
     --boot-disk-size="10GB"
 
 echo "🎉 Deployment successful!"

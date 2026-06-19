@@ -2,10 +2,14 @@
 # GCP VM Startup Script for Race Genie Bot
 set -e
 
-# 1. Update system and install Node.js 22 + unzip
-echo "Installing Node.js and system dependencies..."
+# 1. Update system and install base utilities (curl, unzip)
+echo "Installing base utilities..."
+apt-get update && apt-get install -y curl unzip
+
+# 2. Install Node.js 22
+echo "Installing Node.js..."
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt-get update && apt-get install -y nodejs unzip
+apt-get install -y nodejs
 
 # 2. Install PM2 globally
 npm install -g pm2
