@@ -64,6 +64,8 @@ create_secret_if_missing "CLIENT_ID" "$CLIENT_ID"
 if ! gcloud iam service-accounts describe "$SA_EMAIL" &>/dev/null; then
     echo "Creating Service Account: $SA_NAME..."
     gcloud iam service-accounts create "$SA_NAME" --display-name="Race Genie VM Service Account"
+    echo "Waiting 10 seconds for Service Account propagation across IAM..."
+    sleep 10
 else
     echo "Service Account $SA_NAME already exists."
 fi
