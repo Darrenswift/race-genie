@@ -89,7 +89,40 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --role="roles/storage.objectViewer" \
     --quiet
 
-# 7. Create GCS Deploy Bucket
+# 7. Create Custom VPC Network, Subnet & Firewall Rules
+NETWORK_NAME="race-genie-network"
+SUBNET_NAME="race-genie-subnet"
+
+if ! gcloud compute networks describe "$NETWORK_NAME" &>/dev/null; then
+    echo "Creating VPC Network: $NETWORK_NAME..."
+    gcloud compute networks create "$NETWORK_NAME" --subnet-mode=custom
+else
+    echo "VPC Network $NETWORK_NAME already exists."
+fi
+
+if ! gcloud compute networks subnets describe "$SUBNET_NAME" --region="$REGION" &>/dev/null; then
+    echo "Creating Subnet: $SUBNET_NAME..."
+    gcloud compute networks subnets create "$SUBNET_NAME" \
+        --network="$NETWORK_NAME" \
+        --range="10.0.0.0/24" \
+        --region="$REGION"
+else
+    echo "Subnet $SUBNET_NAME already exists."
+fi
+
+FIREWALL_RULE="allow-ssh-and-healthcheck"
+if ! gcloud compute firewall-rules describe "$FIREWALL_RULE" &>/dev/null; then
+    echo "Creating Firewall Rule: $FIREWALL_RULE..."
+    gcloud compute firewall-rules create "$FIREWALL_RULE" \
+        --network="$NETWORK_NAME" \
+        --allow=tcp:22,tcp:3000 \
+        --source-ranges="0.0.0.0/0"
+else
+    echo "Firewall rule $FIREWALL_RULE already exists."
+fi
+
+
+# 8. Create GCS Deploy Bucket
 if ! gcloud storage buckets describe "gs://${BUCKET_NAME}" &>/dev/null; then
     echo "Creating deployment storage bucket: gs://${BUCKET_NAME}..."
     gcloud storage buckets create "gs://${BUCKET_NAME}" --location="$REGION"
@@ -97,7 +130,7 @@ else
     echo "Bucket gs://${BUCKET_NAME} already exists."
 fi
 
-# 8. Package and Upload Source Code
+# 9. Package and Upload Source Code
 echo "Packaging application source files..."
 # Create a zip, omitting dev/sensitive directories
 zip -q -r app.zip . \
@@ -113,7 +146,7 @@ echo "Uploading source package to GCS..."
 gcloud storage cp app.zip "gs://${BUCKET_NAME}/app.zip"
 rm app.zip
 
-# 9. Deploy/Recreate VM Instance
+# 10. Deploy/Recreate VM Instance
 if gcloud compute instances describe "$VM_NAME" --zone="$ZONE" &>/dev/null; then
     echo "⚠️ VM instance $VM_NAME already exists. Replacing it for fresh deploy..."
     gcloud compute instances delete "$VM_NAME" --zone="$ZONE" --quiet
@@ -129,6 +162,8 @@ gcloud compute instances create "$VM_NAME" \
     --metadata-from-file="startup-script=startup.sh" \
     --image-family="debian-12" \
     --image-project="debian-cloud" \
+    --network="$NETWORK_NAME" \
+    --subnet="$SUBNET_NAME" \
     --boot-disk-size="10GB"
 
 echo "🎉 Deployment successful!"
