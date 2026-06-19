@@ -131,6 +131,32 @@ async function fileToGenerativePart(attachment) {
 }
 
 /**
+ * Helper to retry a function with exponential backoff on transient errors (like 503/429).
+ */
+async function retryWithBackoff(fn, retries = 3, delay = 1500) {
+    try {
+        return await fn();
+    } catch (error) {
+        if (retries <= 0) {
+            throw error;
+        }
+
+        // Check if the error is transient:
+        // Status code 503 (Overloaded/High demand), 429 (Rate limit) or matching string
+        const isTransient = error.status === 503 || error.status === 429 ||
+                            (error.message && (error.message.includes('503') || error.message.includes('429')));
+
+        if (isTransient) {
+            console.warn(`⚠️ Gemini API returned transient error (${error.status || '503/429'}). Retrying in ${delay}ms... (${retries} retries left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return retryWithBackoff(fn, retries - 1, delay * 2);
+        }
+
+        throw error;
+    }
+}
+
+/**
  * Sends prompt (and optional attachment) to Gemini, carrying along session history.
  * @param {string} prompt - Driver query.
  * @param {Array} history - Past message history array.
@@ -160,18 +186,20 @@ async function generateSetupAdvice(prompt, history = [], attachment = null) {
     });
 
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-lite',
-            contents: apiContents,
-            config: {
-                systemInstruction: systemInstruction,
-                maxOutputTokens: 1850
-            }
-        });
+        const response = await retryWithBackoff(async () => {
+            return await ai.models.generateContent({
+                model: 'gemini-2.5-flash-lite',
+                contents: apiContents,
+                config: {
+                    systemInstruction: systemInstruction,
+                    maxOutputTokens: 1850
+                }
+            });
+        }, 3, 1500); // Retry 3 times, starting at 1.5s delay (then 3s, then 6s)
 
         return response.text;
     } catch (error) {
-        console.error("Gemini API call failed:", error);
+        console.error("Gemini API call failed after retries:", error);
         throw error;
     }
 }
