@@ -121,6 +121,29 @@ else
     echo "Firewall rule $FIREWALL_RULE already exists."
 fi
 
+ROUTER_NAME="race-genie-router"
+if ! gcloud compute routers describe "$ROUTER_NAME" --region="$REGION" &>/dev/null; then
+    echo "Creating Cloud Router: $ROUTER_NAME..."
+    gcloud compute routers create "$ROUTER_NAME" \
+        --network="$NETWORK_NAME" \
+        --region="$REGION"
+else
+    echo "Cloud Router $ROUTER_NAME already exists."
+fi
+
+NAT_NAME="race-genie-nat"
+if ! gcloud compute routers describe "$ROUTER_NAME" --region="$REGION" --format="value(nats.name)" | grep -q "$NAT_NAME"; then
+    echo "Creating Cloud NAT Gateway: $NAT_NAME..."
+    gcloud compute routers nats create "$NAT_NAME" \
+        --router="$ROUTER_NAME" \
+        --region="$REGION" \
+        --auto-allocate-nat-external-ips \
+        --nat-all-subnet-ip-ranges
+else
+    echo "Cloud NAT Gateway $NAT_NAME already exists."
+fi
+
+
 
 # 8. Create GCS Deploy Bucket
 if ! gcloud storage buckets describe "gs://${BUCKET_NAME}" &>/dev/null; then
@@ -164,6 +187,7 @@ gcloud compute instances create "$VM_NAME" \
     --image-project="debian-cloud" \
     --network="$NETWORK_NAME" \
     --subnet="$SUBNET_NAME" \
+    --no-address \
     --boot-disk-size="10GB"
 
 echo "🎉 Deployment successful!"
