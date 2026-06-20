@@ -70,23 +70,33 @@ carsCache = loadCarList();
  * Filter autocomplete suggestions to return up to 25 items matching the focused query.
  */
 function searchTracks(query) {
+    console.log(`[Autocomplete] searchTracks called with query: "${query}"`);
     if (!query) {
-        return tracksCache.slice(0, 25);
+        const result = tracksCache.slice(0, 25);
+        console.log(`[Autocomplete] Empty query, returning first ${result.length} tracks.`);
+        return result;
     }
     const cleanQuery = query.toLowerCase();
-    return tracksCache
+    const result = tracksCache
         .filter(track => track.toLowerCase().includes(cleanQuery))
         .slice(0, 25);
+    console.log(`[Autocomplete] Query "${query}" matched ${result.length} tracks.`);
+    return result;
 }
 
 function searchCars(query) {
+    console.log(`[Autocomplete] searchCars called with query: "${query}"`);
     if (!query) {
-        return carsCache.slice(0, 25);
+        const result = carsCache.slice(0, 25);
+        console.log(`[Autocomplete] Empty query, returning first ${result.length} cars.`);
+        return result;
     }
     const cleanQuery = query.toLowerCase();
-    return carsCache
+    const result = carsCache
         .filter(car => car.toLowerCase().includes(cleanQuery))
         .slice(0, 25);
+    console.log(`[Autocomplete] Query "${query}" matched ${result.length} cars.`);
+    return result;
 }
 
 module.exports = {
