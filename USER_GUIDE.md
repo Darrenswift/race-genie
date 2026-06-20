@@ -12,8 +12,8 @@ All interaction happens privately and cleanly via Discord's Slash Commands.
 Use this command to get starting baseline setups, dial-in adjustments, or review an existing tuning sheet.
 
 **Options/Parameters:**
-*   `car` *(Required)*: The name/model of your car (e.g., `Gr.3 Mercedes AMG`, `Porsche 911 GT3 RS '22`).
-*   `track` *(Required)*: The track you are racing on (e.g., `Spa-Francorchamps`, `Nürburgring GP`).
+*   `car` *(Required)*: The name/model of your car. **Includes autocomplete suggestions for all 370+ GT7 cars** (as you type, options will filter; you can also type manually if a car is missing).
+*   `track` *(Required)*: The track layout you are racing on. **Includes autocomplete suggestions for all 120+ GT7 layouts** (as you type, options will filter; manual custom inputs are still allowed).
 *   `weather` *(Optional)*: Current or transitioning weather (e.g., `Heavy Rain`, `Wet to Dry Transition`, `Intermittent Damp`).
 *   `drivetrain` *(Optional)*: Select layout (`FR`, `MR`, `FF`, `4WD`, or `RR`) if you want to ensure the bot uses exact drivetrain dynamics immediately.
 *   `screenshot` *(Optional)*: **Attach a screenshot of your current GT7 garage tuning sheet.** The bot will analyze your actual numbers and tell you exactly which settings to increase/decrease!

@@ -7,6 +7,7 @@ Race Genie is a no-nonsense trackside race engineer Discord bot built specifical
 ## 🚀 Key Features
 
 *   **Slash Commands (`/setup`)**: Clean, interactive Discord interface for inputting setups (Car, Track, Weather, and Drivetrain).
+*   **Smart Autocomplete**: Type-ahead auto-complete suggestions for all **370+ cars** and **120+ track layouts** in GT7, while still allowing manual custom inputs.
 *   **Multimodal Analysis**: Drivers can upload a **screenshot of their GT7 garage tuning sheet**. Race Genie reads the numbers visually, compares them to baseline specs, and instructs what specific setting clicks to adjust.
 *   **Ephemerality**: Bot interactions are private (visible only to the user invoking them), keeping channels clean.
 *   **Dynamic Weather Strategies**: Provides split advice for wet-to-dry transitions, balancing garage setups with real-time MFD tweaks.
@@ -17,14 +18,19 @@ Race Genie is a no-nonsense trackside race engineer Discord bot built specifical
 ## 📁 File Structure
 
 ```text
+├── car_list.md             # Complete GT7 vehicle roster for autocomplete cache
+├── tracklist.md            # Complete GT7 track and layout directory
+├── race_setup_guide.md     # FLUX89 tuning guide reference sheet
 ├── config.js               # Environment variables check and validation
 ├── deploy-commands.js      # Script to register Slash Commands with Discord
+├── destroy.sh              # Teardown script to delete all GCP resources
 ├── index.js                # Main bot entry point and Discord gateway handler
 ├── package.json            # Scripts, dependency locks, and engines
 ├── README.md               # Developer and Repository documentation (This file)
 ├── USER_GUIDE.md           # Copyable guide for drivers on your Discord server
 ├── INSTRUCTIONS.md         # Step-by-step developer portal setup & Render guide
 └── services/
+    ├── autocomplete.js     # Text search matching service for slash commands
     ├── gemini.js           # Gemini API interface & FLUX89 system guidelines
     └── session.js          # In-memory driver conversation logs
 ```
