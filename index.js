@@ -68,7 +68,6 @@ client.on('interactionCreate', async (interaction) => {
         const { commandName } = interaction;
         if (commandName === 'setup') {
             const focusedOption = interaction.options.getFocused(true);
-            console.log(`🔍 Autocomplete query for ${focusedOption.name}: "${focusedOption.value}"`);
             let choices = [];
 
             if (focusedOption.name === 'car') {
@@ -77,13 +76,12 @@ client.on('interactionCreate', async (interaction) => {
                 choices = searchTracks(focusedOption.value);
             }
 
-            console.log(`   Returning ${choices.length} choices to Discord.`);
             try {
                 await interaction.respond(
                     choices.map(choice => ({ name: choice, value: choice }))
                 );
             } catch (err) {
-                console.error("❌ Autocomplete Response Error:", err);
+                console.error("Autocomplete Response Error:", err);
             }
         }
         return;
