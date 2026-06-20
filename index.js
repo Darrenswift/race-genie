@@ -3,6 +3,8 @@ const http = require('http');
 const { DISCORD_TOKEN, PORT } = require('./config');
 const { generateSetupAdvice } = require('./services/gemini');
 const { getSession, updateSessionHistory, clearSession } = require('./services/session');
+const { searchTracks, searchCars } = require('./services/autocomplete');
+
 
 // Simple web server for Render health checks
 http.createServer((req, res) => {
@@ -62,6 +64,29 @@ client.once('ready', () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
+    if (interaction.isAutocomplete()) {
+        const { commandName } = interaction;
+        if (commandName === 'setup') {
+            const focusedOption = interaction.options.getFocused(true);
+            let choices = [];
+
+            if (focusedOption.name === 'car') {
+                choices = searchCars(focusedOption.value);
+            } else if (focusedOption.name === 'track') {
+                choices = searchTracks(focusedOption.value);
+            }
+
+            try {
+                await interaction.respond(
+                    choices.map(choice => ({ name: choice, value: choice }))
+                );
+            } catch (err) {
+                console.error("Autocomplete Response Error:", err);
+            }
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, user } = interaction;

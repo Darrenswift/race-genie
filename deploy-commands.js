@@ -9,11 +9,13 @@ const commands = [
             option.setName('car')
                 .setDescription('The car model (e.g., Porsche 911 GT3 RS, Gr.3 Mercedes)')
                 .setRequired(true)
+                .setAutocomplete(true)
         )
         .addStringOption(option =>
             option.setName('track')
                 .setDescription('The track name (e.g., Spa-Francorchamps, Monza)')
                 .setRequired(true)
+                .setAutocomplete(true)
         )
         .addStringOption(option =>
             option.setName('weather')
